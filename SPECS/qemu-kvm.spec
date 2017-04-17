@@ -83,7 +83,7 @@ Obsoletes: %1 < %{obsoletes_version}
 Summary: QEMU is a FAST! processor emulator
 Name: %{pkgname}%{?pkgsuffix}
 Version: 2.6.0
-Release: 28%{?dist}_3.6.1
+Release: 28%{?dist}_3.6.1.osl1
 # Epoch because we pushed a qemu-1.0 package. AIUI this can't ever be dropped
 Epoch: 10
 License: GPLv2+ and LGPLv2+ and BSD
@@ -1218,6 +1218,9 @@ Patch535: kvm-cirrus-fix-patterncopy-checks.patch
 Patch536: kvm-Revert-cirrus-allow-zero-source-pitch-in-pattern-fil.patch
 # For bz#1420493 - EMBARGOED CVE-2017-2620 qemu-kvm-rhev: Qemu: display: cirrus: potential arbitrary code execution via cirrus_bitblt_cputovideo [rhel-7.3.z]
 Patch537: kvm-cirrus-add-blit_is_unsafe-call-to-cirrus_bitblt_cput.patch
+# [RFC,v0] spapr: Disable memory hotplug when HTAB size is insufficient
+# https://patchwork.ozlabs.org/patch/510069/
+Patch999: kvm-spapr-disable-memory-hotplug.patch
 
 BuildRequires: zlib-devel
 BuildRequires: SDL-devel
@@ -1986,6 +1989,7 @@ ApplyOptionalPatch()
 %patch535 -p1
 %patch536 -p1
 %patch537 -p1
+%patch999 -p1
 
 ApplyOptionalPatch qemu-kvm-test.patch
 
@@ -2422,6 +2426,9 @@ useradd -r -u 107 -g qemu -G kvm -d / -s /sbin/nologin \
 %endif
 
 %changelog
+* Tue Apr 18 2017 Lance Albertson <lance@osuosl.org> - ev-2.6.0-28.el7_3.6.1.osl1
+- kvm-spapr-disable-memory-hotplug.patch
+
 * Thu Mar  2 2017 Sandro Bonazzola <sbonazzo@redhat.com> - ev-2.6.0-28.el7_3.6.1
 - Removing RH branding from package name
 

@@ -1,0 +1,40 @@
+diff -urN qemu-2.6.0.orig/hw/ppc/spapr.c qemu-2.6.0/hw/ppc/spapr.c
+--- qemu-2.6.0.orig/hw/ppc/spapr.c	2017-04-18 10:09:12.609736105 -0700
++++ qemu-2.6.0/hw/ppc/spapr.c	2017-04-18 10:10:25.462111313 -0700
+@@ -94,6 +94,8 @@
+ 
+ #define HTAB_SIZE(spapr)        (1ULL << ((spapr)->htab_shift))
+ 
++static bool spapr_memory_hotplug_disabled;
++
+ static XICSState *try_create_xics(const char *type, int nr_servers,
+                                   int nr_irqs, Error **errp)
+ {
+@@ -1108,9 +1110,12 @@
+     } else if (rc > 0) {
+         /* kernel-side HPT allocated */
+         if (rc != shift) {
+-            error_setg(errp,
+-                       "Requested order %d HPT, but kernel allocated order %ld (try smaller maxmem?)",
+-                       shift, rc);
++        /*
++         * Disable memory hotplug since we didn't get the requested
++         * hash table size.
++         */
++        spapr_memory_hotplug_disabled = true;
++
+         }
+ 
+         spapr->htab_shift = shift;
+@@ -2280,6 +2285,11 @@
+             return;
+         }
+ 
++        if (spapr_memory_hotplug_disabled) {
++            error_setg(errp, "Insufficient HTAB size to support memory hotplug");
++            return;
++        }
++
+         spapr_memory_plug(hotplug_dev, dev, node, errp);
+     } else if (object_dynamic_cast(OBJECT(dev), TYPE_SPAPR_CPU_CORE)) {
+         spapr_core_plug(hotplug_dev, dev, errp);
