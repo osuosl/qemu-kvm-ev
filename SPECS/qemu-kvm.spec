@@ -81,7 +81,7 @@ Obsoletes: %1 < %{obsoletes_version}
 Summary: QEMU is a FAST! processor emulator
 Name:    %{pkgname}%{?pkgsuffix}
 Version: 2.3.0
-Release: 31%{?dist}.16.1
+Release: 31%{?dist}.16.1.osl1
 # Epoch because we pushed a qemu-1.0 package. AIUI this can't ever be dropped
 Epoch: 10
 License: GPLv2+ and LGPLv2+ and BSD
@@ -1266,6 +1266,9 @@ Patch585: kvm-virtio-blk-use-blk_io_plug-unplug-for-Linux-AIO-batc.patch
 Patch586: kvm-qcow2-Prevent-backing-file-names-longer-than-1023.patch
 # For bz#1347185 - Regression from CVE-2016-3712: windows installer fails to start
 Patch587: kvm-vga-add-sr_vbe-register-set.patch
+# [RFC,v0] spapr: Disable memory hotplug when HTAB size is insufficient
+# https://patchwork.ozlabs.org/patch/510069/
+Patch999: kvm-spapr-disable-memory-hotplug.patch
 
 
 BuildRequires: zlib-devel
@@ -2068,6 +2071,7 @@ ApplyOptionalPatch()
 %patch585 -p1
 %patch586 -p1
 %patch587 -p1
+%patch999 -p1
 
 ApplyOptionalPatch qemu-kvm-test.patch
 
@@ -2483,6 +2487,9 @@ useradd -r -u 107 -g qemu -G kvm -d / -s /sbin/nologin \
 %{_libdir}/pkgconfig/libcacard.pc
 
 %changelog
+* Tue Apr 18 2017 Lance Albertson <lance@osuosl.org> - ev-2.3.0-31.el7_2.16.1.osl1
+- kvm-spapr-disable-memory-hotplug.patch
+
 * Fri Jul  8 2016 Sandro Bonazzola <sbonazzo@redhat.com> - ev-2.3.0-31.el7_2.16.1
 - Removing RH branding from package name
 
