@@ -1,13 +1,13 @@
-From 2eb539e8b5eeb5f8e3924a8747fc94df8010ef4a Mon Sep 17 00:00:00 2001
+From f030ef25ed07899dec5a0084a49d7de7051632dd Mon Sep 17 00:00:00 2001
 From: Gerd Hoffmann <kraxel@redhat.com>
 Date: Fri, 10 Jun 2016 07:11:22 +0200
-Subject: [PATCH] vga: add sr_vbe register set
+Subject: [PATCH 2/2] vga: add sr_vbe register set
 
 RH-Author: Gerd Hoffmann <kraxel@redhat.com>
 Message-id: <1465542682-16778-2-git-send-email-kraxel@redhat.com>
 Patchwork-id: 70583
 O-Subject: [RHEL-7.3 qemu-kvm-rhev PATCH 1/1] vga: add sr_vbe register set
-Bugzilla: 1347185
+Bugzilla: 1331415 1346976
 RH-Acked-by: Dr. David Alan Gilbert <dgilbert@redhat.com>
 RH-Acked-by: Stefan Hajnoczi <stefanha@redhat.com>
 RH-Acked-by: Laszlo Ersek <lersek@redhat.com>
@@ -37,10 +37,10 @@ Signed-off-by: Miroslav Rezanina <mrezanin@redhat.com>
  2 files changed, 29 insertions(+), 22 deletions(-)
 
 diff --git a/hw/display/vga.c b/hw/display/vga.c
-index d158487..18a5c42 100644
+index 4a55ec6..9ebc54f 100644
 --- a/hw/display/vga.c
 +++ b/hw/display/vga.c
-@@ -147,6 +147,11 @@ static inline bool vbe_enabled(VGACommonState *s)
+@@ -149,6 +149,11 @@ static inline bool vbe_enabled(VGACommonState *s)
      return s->vbe_regs[VBE_DISPI_INDEX_ENABLE] & VBE_DISPI_ENABLED;
  }
  
@@ -52,7 +52,7 @@ index d158487..18a5c42 100644
  static void vga_update_memory_access(VGACommonState *s)
  {
      hwaddr base, offset, size;
-@@ -161,8 +166,8 @@ static void vga_update_memory_access(VGACommonState *s)
+@@ -163,8 +168,8 @@ static void vga_update_memory_access(VGACommonState *s)
          s->has_chain4_alias = false;
          s->plane_updated = 0xf;
      }
@@ -63,7 +63,7 @@ index d158487..18a5c42 100644
          offset = 0;
          switch ((s->gr[VGA_GFX_MISC] >> 2) & 3) {
          case 0:
-@@ -231,7 +236,7 @@ static void vga_precise_update_retrace_info(VGACommonState *s)
+@@ -234,7 +239,7 @@ static void vga_precise_update_retrace_info(VGACommonState *s)
            ((s->cr[VGA_CRTC_OVERFLOW] >> 6) & 2)) << 8);
      vretr_end_line = s->cr[VGA_CRTC_V_SYNC_END] & 0xf;
  
@@ -72,7 +72,7 @@ index d158487..18a5c42 100644
      clock_sel = (s->msr >> 2) & 3;
      dots = (s->msr & 1) ? 8 : 9;
  
-@@ -483,7 +488,6 @@ void vga_ioport_write(void *opaque, uint32_t addr, uint32_t val)
+@@ -486,7 +491,6 @@ void vga_ioport_write(void *opaque, uint32_t addr, uint32_t val)
          printf("vga: write SR%x = 0x%02x\n", s->sr_index, val);
  #endif
          s->sr[s->sr_index] = val & sr_mask[s->sr_index];
@@ -80,7 +80,7 @@ index d158487..18a5c42 100644
          if (s->sr_index == VGA_SEQ_CLOCK_MODE) {
              s->update_retrace_info(s);
          }
-@@ -677,13 +681,13 @@ static void vbe_update_vgaregs(VGACommonState *s)
+@@ -680,13 +684,13 @@ static void vbe_update_vgaregs(VGACommonState *s)
  
      if (s->vbe_regs[VBE_DISPI_INDEX_BPP] == 4) {
          shift_control = 0;
@@ -97,7 +97,7 @@ index d158487..18a5c42 100644
      }
      s->gr[VGA_GFX_MODE] = (s->gr[VGA_GFX_MODE] & ~0x60) |
          (shift_control << 5);
-@@ -833,7 +837,7 @@ uint32_t vga_mem_readb(VGACommonState *s, hwaddr addr)
+@@ -836,7 +840,7 @@ uint32_t vga_mem_readb(VGACommonState *s, hwaddr addr)
          break;
      }
  
@@ -106,7 +106,7 @@ index d158487..18a5c42 100644
          /* chain 4 mode : simplest access */
          assert(addr < s->vram_size);
          ret = s->vram_ptr[addr];
-@@ -901,11 +905,11 @@ void vga_mem_writeb(VGACommonState *s, hwaddr addr, uint32_t val)
+@@ -904,11 +908,11 @@ void vga_mem_writeb(VGACommonState *s, hwaddr addr, uint32_t val)
          break;
      }
  
@@ -120,7 +120,7 @@ index d158487..18a5c42 100644
              assert(addr < s->vram_size);
              s->vram_ptr[addr] = val;
  #ifdef DEBUG_VGA_MEM
-@@ -918,7 +922,7 @@ void vga_mem_writeb(VGACommonState *s, hwaddr addr, uint32_t val)
+@@ -921,7 +925,7 @@ void vga_mem_writeb(VGACommonState *s, hwaddr addr, uint32_t val)
          /* odd/even mode (aka text mode mapping) */
          plane = (s->gr[VGA_GFX_PLANE_READ] & 2) | (addr & 1);
          mask = (1 << plane);
@@ -129,7 +129,7 @@ index d158487..18a5c42 100644
              addr = ((addr & ~1) << 1) | plane;
              if (addr >= s->vram_size) {
                  return;
-@@ -993,7 +997,7 @@ void vga_mem_writeb(VGACommonState *s, hwaddr addr, uint32_t val)
+@@ -996,7 +1000,7 @@ void vga_mem_writeb(VGACommonState *s, hwaddr addr, uint32_t val)
  
      do_write:
          /* mask data according to sr[2] */
@@ -138,7 +138,7 @@ index d158487..18a5c42 100644
          s->plane_updated |= mask; /* only used to detect font change */
          write_mask = mask16[mask];
          if (addr * sizeof(uint32_t) >= s->vram_size) {
-@@ -1149,10 +1153,10 @@ static void vga_get_text_resolution(VGACommonState *s, int *pwidth, int *pheight
+@@ -1152,10 +1156,10 @@ static void vga_get_text_resolution(VGACommonState *s, int *pwidth, int *pheight
      /* total width & height */
      cheight = (s->cr[VGA_CRTC_MAX_SCAN] & 0x1f) + 1;
      cwidth = 8;
@@ -151,7 +151,7 @@ index d158487..18a5c42 100644
          cwidth = 16; /* NOTE: no 18 pixel wide */
      }
      width = (s->cr[VGA_CRTC_H_DISP] + 1);
-@@ -1194,7 +1198,7 @@ static void vga_draw_text(VGACommonState *s, int full_update)
+@@ -1197,7 +1201,7 @@ static void vga_draw_text(VGACommonState *s, int full_update)
      int64_t now = qemu_clock_get_ms(QEMU_CLOCK_VIRTUAL);
  
      /* compute font data address (in plane 2) */
@@ -160,7 +160,7 @@ index d158487..18a5c42 100644
      offset = (((v >> 4) & 1) | ((v << 1) & 6)) * 8192 * 4 + 2;
      if (offset != s->font_offsets[0]) {
          s->font_offsets[0] = offset;
-@@ -1503,11 +1507,11 @@ static void vga_draw_graphic(VGACommonState *s, int full_update)
+@@ -1506,11 +1510,11 @@ static void vga_draw_graphic(VGACommonState *s, int full_update)
      }
  
      if (shift_control == 0) {
@@ -174,7 +174,7 @@ index d158487..18a5c42 100644
              disp_width <<= 1;
          }
      }
-@@ -1571,7 +1575,7 @@ static void vga_draw_graphic(VGACommonState *s, int full_update)
+@@ -1574,7 +1578,7 @@ static void vga_draw_graphic(VGACommonState *s, int full_update)
  
      if (shift_control == 0) {
          full_update |= update_palette16(s);
@@ -183,7 +183,7 @@ index d158487..18a5c42 100644
              v = VGA_DRAW_LINE4D2;
          } else {
              v = VGA_DRAW_LINE4;
-@@ -1579,7 +1583,7 @@ static void vga_draw_graphic(VGACommonState *s, int full_update)
+@@ -1582,7 +1586,7 @@ static void vga_draw_graphic(VGACommonState *s, int full_update)
          bits = 4;
      } else if (shift_control == 1) {
          full_update |= update_palette16(s);
@@ -192,7 +192,7 @@ index d158487..18a5c42 100644
              v = VGA_DRAW_LINE2D2;
          } else {
              v = VGA_DRAW_LINE2;
-@@ -1626,7 +1630,7 @@ static void vga_draw_graphic(VGACommonState *s, int full_update)
+@@ -1629,7 +1633,7 @@ static void vga_draw_graphic(VGACommonState *s, int full_update)
  #if 0
      printf("w=%d h=%d v=%d line_offset=%d cr[0x09]=0x%02x cr[0x17]=0x%02x linecmp=%d sr[0x01]=0x%02x\n",
             width, height, v, line_offset, s->cr[9], s->cr[VGA_CRTC_MODE],
@@ -201,7 +201,7 @@ index d158487..18a5c42 100644
  #endif
      addr1 = (s->start_addr * 4);
      bwidth = (width * bits + 7) / 8;
-@@ -1778,6 +1782,7 @@ void vga_common_reset(VGACommonState *s)
+@@ -1781,6 +1785,7 @@ void vga_common_reset(VGACommonState *s)
  {
      s->sr_index = 0;
      memset(s->sr, '\0', sizeof(s->sr));
@@ -209,7 +209,7 @@ index d158487..18a5c42 100644
      s->gr_index = 0;
      memset(s->gr, '\0', sizeof(s->gr));
      s->ar_index = 0;
-@@ -1880,10 +1885,10 @@ static void vga_update_text(void *opaque, console_ch_t *chardata)
+@@ -1883,10 +1888,10 @@ static void vga_update_text(void *opaque, console_ch_t *chardata)
          /* total width & height */
          cheight = (s->cr[VGA_CRTC_MAX_SCAN] & 0x1f) + 1;
          cw = 8;
@@ -222,7 +222,7 @@ index d158487..18a5c42 100644
              cw = 16; /* NOTE: no 18 pixel wide */
          }
          width = (s->cr[VGA_CRTC_H_DISP] + 1);
-@@ -2049,6 +2054,7 @@ static int vga_common_post_load(void *opaque, int version_id)
+@@ -2053,6 +2058,7 @@ static int vga_common_post_load(void *opaque, int version_id)
  
      /* force refresh */
      s->graphic_mode = -1;
@@ -231,10 +231,10 @@ index d158487..18a5c42 100644
  }
  
 diff --git a/hw/display/vga_int.h b/hw/display/vga_int.h
-index fcfcc5f..01bdd3e 100644
+index bdb43a5..3ce5544 100644
 --- a/hw/display/vga_int.h
 +++ b/hw/display/vga_int.h
-@@ -99,6 +99,7 @@ typedef struct VGACommonState {
+@@ -98,6 +98,7 @@ typedef struct VGACommonState {
      MemoryRegion chain4_alias;
      uint8_t sr_index;
      uint8_t sr[256];

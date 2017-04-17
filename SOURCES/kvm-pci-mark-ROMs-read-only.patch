@@ -1,0 +1,49 @@
+From b11fe1fb232dbbbdef3a4d3d45a1615c03f951e8 Mon Sep 17 00:00:00 2001
+From: Laurent Vivier <lvivier@redhat.com>
+Date: Thu, 2 Feb 2017 18:19:31 +0100
+Subject: [PATCH 2/9] pci: mark ROMs read-only
+
+RH-Author: Laurent Vivier <lvivier@redhat.com>
+Message-id: <20170202181932.551-3-lvivier@redhat.com>
+Patchwork-id: 73519
+O-Subject: [RHEV-7.3.z qemu-kvm-rhev PATCH 2/3] pci: mark ROMs read-only
+Bugzilla: 1420456
+RH-Acked-by: David Gibson <dgibson@redhat.com>
+RH-Acked-by: Michael S. Tsirkin <mst@redhat.com>
+RH-Acked-by: Thomas Huth <thuth@redhat.com>
+
+From: "Michael S. Tsirkin" <mst@redhat.com>
+
+Looks like we didn't mark PCI ROMs as RO allowing
+mischief such as guests writing there.
+Further, e.g. vhost gets confused trying to allocate
+enough space to log writes there. Fix it up.
+
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+Reviewed-by: Marcel Apfelbaum <marcel@redhat.com>
+Tested-by: Laurent Vivier <lvivier@redhat.com>
+(cherry picked from commit ec42813028d9ede3f9f73b8c943b00ff235ba0c1)
+Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+
+BZ: https://bugzilla.redhat.com/show_bug.cgi?id=1404673
+Signed-off-by: Miroslav Rezanina <mrezanin@redhat.com>
+---
+ hw/pci/pci.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/hw/pci/pci.c b/hw/pci/pci.c
+index df9bf93..a19c67a 100644
+--- a/hw/pci/pci.c
++++ b/hw/pci/pci.c
+@@ -2199,7 +2199,7 @@ static void pci_add_option_rom(PCIDevice *pdev, bool is_default_rom,
+         snprintf(name, sizeof(name), "%s.rom", object_get_typename(OBJECT(pdev)));
+     }
+     pdev->has_rom = true;
+-    memory_region_init_ram(&pdev->rom, OBJECT(pdev), name, size, &error_fatal);
++    memory_region_init_rom(&pdev->rom, OBJECT(pdev), name, size, &error_fatal);
+     vmstate_register_ram(&pdev->rom, &pdev->qdev);
+     ptr = memory_region_get_ram_ptr(&pdev->rom);
+     load_image(path, ptr);
+-- 
+1.8.3.1
+

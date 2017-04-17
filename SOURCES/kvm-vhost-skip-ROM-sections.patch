@@ -1,0 +1,58 @@
+From 2bed4683942626b8e3bcf2721710d6f26322a470 Mon Sep 17 00:00:00 2001
+From: Laurent Vivier <lvivier@redhat.com>
+Date: Thu, 2 Feb 2017 18:19:32 +0100
+Subject: [PATCH 3/9] vhost: skip ROM sections
+
+RH-Author: Laurent Vivier <lvivier@redhat.com>
+Message-id: <20170202181932.551-4-lvivier@redhat.com>
+Patchwork-id: 73520
+O-Subject: [RHEV-7.3.z qemu-kvm-rhev PATCH 3/3] vhost: skip ROM sections
+Bugzilla: 1420456
+RH-Acked-by: David Gibson <dgibson@redhat.com>
+RH-Acked-by: Michael S. Tsirkin <mst@redhat.com>
+RH-Acked-by: Thomas Huth <thuth@redhat.com>
+
+From: "Michael S. Tsirkin" <mst@redhat.com>
+
+vhost does not support RO protections on memory at the moment - adding
+ROMs would mean that e.g. a buggy guest might change them in-memory - a
+condition from which guest reset does not recover. Not nice.
+
+We also definitely don't want to try logging writes into ROMs -
+in particular guests set very high addresses for ROM BARs
+so logging these writes would waste a lot of memory.
+
+Maybe ROMs could be supported with the iotlb variant -
+not sure, but there seems to be no good reason for virtio
+to try to do DMA from ROM. So let's just skip ROM memory.
+
+Suggested-by: Laurent Vivier <lvivier@redhat.com>
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+Reviewed-by: Laurent Vivier <lvivier@redhat.com>
+Tested-by: Laurent Vivier <lvivier@redhat.com>
+(cherry picked from commit d56ec1e98c0005933fe677d633484297f422691a)
+Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+
+BZ: https://bugzilla.redhat.com/show_bug.cgi?id=1404673
+Signed-off-by: Miroslav Rezanina <mrezanin@redhat.com>
+---
+ hw/virtio/vhost.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/hw/virtio/vhost.c b/hw/virtio/vhost.c
+index 3b4db14..b8f1d3f 100644
+--- a/hw/virtio/vhost.c
++++ b/hw/virtio/vhost.c
+@@ -542,7 +542,8 @@ static void vhost_set_memory(MemoryListener *listener,
+ 
+ static bool vhost_section(MemoryRegionSection *section)
+ {
+-    return memory_region_is_ram(section->mr);
++    return memory_region_is_ram(section->mr) &&
++        !memory_region_is_rom(section->mr);
+ }
+ 
+ static void vhost_begin(MemoryListener *listener)
+-- 
+1.8.3.1
+

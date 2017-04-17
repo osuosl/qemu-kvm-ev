@@ -39,7 +39,6 @@ shift
 have_tcmalloc=$1
 shift
 
-
 if [ "$have_rbd" == "enable" ]; then
   rbd_driver=rbd,
 fi
@@ -80,12 +79,10 @@ fi
     --enable-linux-aio \
     --disable-live-block-migration \
     --enable-lzo \
-    --enable-opengl \
+    --disable-opengl \
     --enable-pie \
     --disable-qom-cast-debug \
-    --enable-quorum \
     --disable-sdl \
-    --enable-smartcard-nss \
     --enable-snappy \
     --disable-sparse \
     --disable-strip \
@@ -97,14 +94,15 @@ fi
     --disable-vhost-scsi \
     --disable-virtfs \
     --disable-vnc-jpeg \
+    --disable-vte \
     --enable-vnc-png \
     --enable-vnc-sasl \
-    --enable-vnc-tls \
-    --enable-vnc-ws \
-    --disable-vte \
     --enable-werror \
     --disable-xen \
     --disable-xfsctl \
+    --enable-gnutls \
+    --disable-gcrypt \
+    --enable-nettle \
     --${have_fdt}-fdt \
     --${have_gluster}-glusterfs \
     --${have_guest_agent}-guest-agent \
@@ -113,9 +111,10 @@ fi
     --${have_rdma}-rdma \
     --${have_seccomp}-seccomp \
     --${have_spice}-spice \
+    --${have_spice}-smartcard \
     --${have_usbredir}-usb-redir \
     --${have_tcmalloc}-tcmalloc \
     --audio-drv-list=pa,alsa \
-    --block-drv-rw-whitelist=qcow2,raw,file,host_device,nbd,iscsi,${gluster_driver}${rbd_driver}blkdebug \
+    --block-drv-rw-whitelist=qcow2,raw,file,host_device,nbd,iscsi,${gluster_driver}${rbd_driver}blkdebug,luks \
     --block-drv-ro-whitelist=vmdk,vhdx,vpc,https,ssh \
     "$@"
