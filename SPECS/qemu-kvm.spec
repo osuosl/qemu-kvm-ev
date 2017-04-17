@@ -1218,6 +1218,9 @@ Patch535: kvm-cirrus-fix-patterncopy-checks.patch
 Patch536: kvm-Revert-cirrus-allow-zero-source-pitch-in-pattern-fil.patch
 # For bz#1420493 - EMBARGOED CVE-2017-2620 qemu-kvm-rhev: Qemu: display: cirrus: potential arbitrary code execution via cirrus_bitblt_cputovideo [rhel-7.3.z]
 Patch537: kvm-cirrus-add-blit_is_unsafe-call-to-cirrus_bitblt_cput.patch
+# [RFC,v0] spapr: Disable memory hotplug when HTAB size is insufficient
+# https://patchwork.ozlabs.org/patch/510069/
+Patch999: kvm-spapr-disable-memory-hotplug.patch
 
 BuildRequires: zlib-devel
 BuildRequires: SDL-devel
@@ -1986,6 +1989,7 @@ ApplyOptionalPatch()
 %patch535 -p1
 %patch536 -p1
 %patch537 -p1
+%patch999 -p1
 
 ApplyOptionalPatch qemu-kvm-test.patch
 

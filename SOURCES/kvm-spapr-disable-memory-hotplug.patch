@@ -1,0 +1,31 @@
+diff -urN qemu-2.6.0.old/hw/ppc/spapr.c qemu-2.6.0/hw/ppc/spapr.c
+--- qemu-2.6.0.old/hw/ppc/spapr.c	2017-04-17 15:55:02.878838160 -0700
++++ qemu-2.6.0/hw/ppc/spapr.c	2017-04-17 16:07:42.783039208 -0700
+@@ -1108,9 +1108,12 @@
+     } else if (rc > 0) {
+         /* kernel-side HPT allocated */
+         if (rc != shift) {
+-            error_setg(errp,
+-                       "Requested order %d HPT, but kernel allocated order %ld (try smaller maxmem?)",
+-                       shift, rc);
++        /*
++         * Disable memory hotplug since we didn't get the requested
++         * hash table size.
++         */
++        spapr_memory_hotplug_disabled = true;
++
+         }
+ 
+         spapr->htab_shift = shift;
+@@ -2280,6 +2283,11 @@
+             return;
+         }
+ 
++        if (spapr_memory_hotplug_disabled) {
++            error_setg(errp, "Insufficient HTAB size to support memory hotplug");
++            return;
++        }
++
+         spapr_memory_plug(hotplug_dev, dev, node, errp);
+     } else if (object_dynamic_cast(OBJECT(dev), TYPE_SPAPR_CPU_CORE)) {
+         spapr_core_plug(hotplug_dev, dev, errp);
