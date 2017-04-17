@@ -1,0 +1,37 @@
+--- a/hw/ppc/spapr.c	2016-07-26 16:38:29.318702146 +0000
++++ b/hw/ppc/spapr.c	2016-07-26 16:40:45.340347989 +0000
+@@ -92,6 +92,9 @@
+ 
+ #define HTAB_SIZE(spapr)        (1ULL << ((spapr)->htab_shift))
+ 
++/* TODO: Move this to sPAPRMachineState ? */
++static bool spapr_memory_hotplug_disabled;
++
+ static XICSState *try_create_xics(const char *type, int nr_servers,
+                                   int nr_irqs, Error **errp)
+ {
+@@ -999,7 +1002,11 @@
+     if (shift > 0) {
+         /* Kernel handles htab, we don't need to allocate one */
+         if (shift != spapr->htab_shift) {
+-            error_setg(&error_abort, "Failed to allocate HTAB of requested size, try with smaller maxmem");
++            /*
++             * Disable memory hotplug since we didn't get the requested
++             * hash table size.
++             */
++            spapr_memory_hotplug_disabled = true;
+         }
+ 
+         spapr->htab_shift = shift;
+@@ -2191,6 +2198,11 @@
+             return;
+         }
+ 
++        if (spapr_memory_hotplug_disabled) {
++            error_setg(errp, "Insufficient HTAB size to support memory hotplug");
++            return;
++        }
++
+         spapr_memory_plug(hotplug_dev, dev, node, errp);
+     }
+ }

@@ -1266,6 +1266,9 @@ Patch585: kvm-virtio-blk-use-blk_io_plug-unplug-for-Linux-AIO-batc.patch
 Patch586: kvm-qcow2-Prevent-backing-file-names-longer-than-1023.patch
 # For bz#1347185 - Regression from CVE-2016-3712: windows installer fails to start
 Patch587: kvm-vga-add-sr_vbe-register-set.patch
+# [RFC,v0] spapr: Disable memory hotplug when HTAB size is insufficient
+# https://patchwork.ozlabs.org/patch/510069/
+Patch999: kvm-spapr-disable-memory-hotplug.patch
 
 
 BuildRequires: zlib-devel
@@ -2068,6 +2071,7 @@ ApplyOptionalPatch()
 %patch585 -p1
 %patch586 -p1
 %patch587 -p1
+%patch999 -p1
 
 ApplyOptionalPatch qemu-kvm-test.patch
 
